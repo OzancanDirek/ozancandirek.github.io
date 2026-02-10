@@ -98,9 +98,10 @@ window.addEventListener("load", () => {
 
 // TYPING TEXT EFFECT
 const texts = [
-  "Yönetim Bilişim Sistemleri | Full Stack Developer",
+  "C#, ASP.NET Core, Java, Spring Boot, React & More",
+  "Turning ideas into scalable software",
   "Code · Create · Innovate",
-  "Building the future, one line at a time",
+  "Consistency beats motivation",
 ];
 let textIndex = 0;
 let charIndex = 0;
