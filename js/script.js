@@ -1,9 +1,40 @@
+// Performans için debounce utility
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Performans için throttle utility
+function throttle(func, limit) {
+  let inThrottle;
+  return function (...args) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
+    }
+  };
+}
+
+// Cihaz tespiti
+const isMobile =
+  /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent,
+  ) || window.innerWidth < 768;
+const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
 // THEME SWITCHER
 const themeToggle = document.getElementById("themeToggle");
 const themeIcon = document.querySelector(".theme-icon");
 const body = document.body;
 
-// Check for saved theme preference
 const savedTheme = localStorage.getItem("theme") || "dark";
 if (savedTheme === "light") {
   body.classList.add("light-theme");
@@ -17,84 +48,103 @@ themeToggle.addEventListener("click", () => {
   localStorage.setItem("theme", isLight ? "light" : "dark");
 });
 
-// TEXT SCRAMBLE EFFECT
-class TextScramble {
-  constructor(el) {
-    this.el = el;
-    this.chars = "!<>-_\\/[]{}—=+*^?#________";
-    this.update = this.update.bind(this);
-  }
+// MOBILE MENU
+const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+const navLinks = document.getElementById("navLinks");
 
-  setText(newText) {
-    const oldText = this.el.innerText;
-    const length = Math.max(oldText.length, newText.length);
-    const promise = new Promise((resolve) => (this.resolve = resolve));
-    this.queue = [];
+if (mobileMenuToggle) {
+  mobileMenuToggle.addEventListener("click", () => {
+    navLinks.classList.toggle("active");
+    mobileMenuToggle.classList.toggle("active");
+  });
 
-    for (let i = 0; i < length; i++) {
-      const from = oldText[i] || "";
-      const to = newText[i] || "";
-      const start = Math.floor(Math.random() * 40);
-      const end = start + Math.floor(Math.random() * 40);
-      this.queue.push({ from, to, start, end });
+  // Menü linklerine tıklandığında menüyü kapat
+  navLinks.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      navLinks.classList.remove("active");
+      mobileMenuToggle.classList.remove("active");
+    });
+  });
+}
+
+// TEXT SCRAMBLE EFFECT (sadece desktop)
+if (!isMobile) {
+  class TextScramble {
+    constructor(el) {
+      this.el = el;
+      this.chars = "!<>-_\\/[]{}—=+*^?#________";
+      this.update = this.update.bind(this);
     }
 
-    cancelAnimationFrame(this.frameRequest);
-    this.frame = 0;
-    this.update();
-    return promise;
-  }
+    setText(newText) {
+      const oldText = this.el.innerText;
+      const length = Math.max(oldText.length, newText.length);
+      const promise = new Promise((resolve) => (this.resolve = resolve));
+      this.queue = [];
 
-  update() {
-    let output = "";
-    let complete = 0;
+      for (let i = 0; i < length; i++) {
+        const from = oldText[i] || "";
+        const to = newText[i] || "";
+        const start = Math.floor(Math.random() * 40);
+        const end = start + Math.floor(Math.random() * 40);
+        this.queue.push({ from, to, start, end });
+      }
 
-    for (let i = 0, n = this.queue.length; i < n; i++) {
-      let { from, to, start, end, char } = this.queue[i];
+      cancelAnimationFrame(this.frameRequest);
+      this.frame = 0;
+      this.update();
+      return promise;
+    }
 
-      if (this.frame >= end) {
-        complete++;
-        output += to;
-      } else if (this.frame >= start) {
-        if (!char || Math.random() < 0.28) {
-          char = this.randomChar();
-          this.queue[i].char = char;
+    update() {
+      let output = "";
+      let complete = 0;
+
+      for (let i = 0, n = this.queue.length; i < n; i++) {
+        let { from, to, start, end, char } = this.queue[i];
+
+        if (this.frame >= end) {
+          complete++;
+          output += to;
+        } else if (this.frame >= start) {
+          if (!char || Math.random() < 0.28) {
+            char = this.randomChar();
+            this.queue[i].char = char;
+          }
+          output += `<span style="color: var(--gold); opacity: 0.5;">${char}</span>`;
+        } else {
+          output += from;
         }
-        output += `<span style="color: var(--gold); opacity: 0.5;">${char}</span>`;
+      }
+
+      this.el.innerHTML = output;
+
+      if (complete === this.queue.length) {
+        this.resolve();
       } else {
-        output += from;
+        this.frameRequest = requestAnimationFrame(this.update);
+        this.frame++;
       }
     }
 
-    this.el.innerHTML = output;
-
-    if (complete === this.queue.length) {
-      this.resolve();
-    } else {
-      this.frameRequest = requestAnimationFrame(this.update);
-      this.frame++;
+    randomChar() {
+      return this.chars[Math.floor(Math.random() * this.chars.length)];
     }
   }
 
-  randomChar() {
-    return this.chars[Math.floor(Math.random() * this.chars.length)];
-  }
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      const scramble1 = new TextScramble(
+        document.getElementById("scrambleText1"),
+      );
+      const scramble2 = new TextScramble(
+        document.getElementById("scrambleText2"),
+      );
+      scramble1.setText("OZANCAN");
+      setTimeout(() => scramble2.setText("DIREK"), 200);
+    }, 1600);
+  });
 }
-
-// Apply scramble effect on load
-window.addEventListener("load", () => {
-  setTimeout(() => {
-    const scramble1 = new TextScramble(
-      document.getElementById("scrambleText1"),
-    );
-    const scramble2 = new TextScramble(
-      document.getElementById("scrambleText2"),
-    );
-
-    scramble1.setText("OZANCAN");
-    setTimeout(() => scramble2.setText("DIREK"), 200);
-  }, 1600);
-});
 
 // TYPING TEXT EFFECT
 const texts = [
@@ -135,18 +185,17 @@ function typeText() {
 
 setTimeout(typeText, 3000);
 
-// MAGNETIC BUTTONS
-const magneticButtons = document.querySelectorAll(
-  ".magnetic-btn, .social-item, .project-card",
-);
+// MAGNETIC BUTTONS (sadece desktop ve dokunmatik değilse)
+if (!isMobile && !isTouch) {
+  const magneticButtons = document.querySelectorAll(
+    ".magnetic-btn, .social-item, .project-card",
+  );
 
-if (window.innerWidth > 768) {
   magneticButtons.forEach((btn) => {
     btn.addEventListener("mousemove", (e) => {
       const rect = btn.getBoundingClientRect();
       const x = e.clientX - rect.left - rect.width / 2;
       const y = e.clientY - rect.top - rect.height / 2;
-
       btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
     });
 
@@ -156,7 +205,7 @@ if (window.innerWidth > 768) {
   });
 }
 
-// GITHUB PROJECTS API
+// GITHUB PROJECTS API (optimize edilmiş)
 async function fetchGitHubProjects() {
   const username = "OzancanDirek";
   const projectsGrid = document.getElementById("projectsGrid");
@@ -164,6 +213,7 @@ async function fetchGitHubProjects() {
   try {
     const response = await fetch(
       `https://api.github.com/users/${username}/repos?sort=updated&per_page=6`,
+      { cache: "force-cache" },
     );
     const repos = await response.json();
 
@@ -186,23 +236,14 @@ async function fetchGitHubProjects() {
                 </div>
                 <h3>${repo.name}</h3>
                 <p>${repo.description || "Açıklama eklenmemiş."}</p>
-                ${
-                  repo.language
-                    ? `
-                    <div class="project-tags">
-                        <span class="tag">${repo.language}</span>
-                    </div>
-                `
-                    : ""
-                }
-                <a href="${repo.html_url}" class="project-link" target="_blank">
-                    Projeyi Görüntüle
-                </a>
+                ${repo.language ? `<div class="project-tags"><span class="tag">${repo.language}</span></div>` : ""}
+                <a href="${repo.html_url}" class="project-link" target="_blank">Projeyi Görüntüle</a>
             </div>
         `,
       )
       .join("");
 
+    // Yeni eklenen elementleri observe et
     document.querySelectorAll(".project-card").forEach((el) => {
       observer.observe(el);
     });
@@ -213,35 +254,43 @@ async function fetchGitHubProjects() {
   }
 }
 
-// PARALLAX SCROLLING
-let parallaxElements = [];
+// PARALLAX SCROLLING (sadece desktop ve performans optimize edilmiş)
+if (!isMobile) {
+  let parallaxElements = [];
+  let ticking = false;
 
-window.addEventListener("load", () => {
-  parallaxElements = [
-    { el: document.querySelector(".grid-background"), speed: 0.5 },
-    { el: document.querySelector(".floating-shapes"), speed: 0.3 },
-    { el: document.querySelector("#particles-canvas"), speed: 0.2 },
-  ];
-});
-
-function parallaxScroll() {
-  const scrolled = window.pageYOffset;
-
-  parallaxElements.forEach((item) => {
-    if (item.el) {
-      const yPos = -(scrolled * item.speed);
-      item.el.style.transform = `translateY(${yPos}px)`;
-    }
+  window.addEventListener("load", () => {
+    parallaxElements = [
+      { el: document.querySelector(".grid-background"), speed: 0.5 },
+      { el: document.querySelector(".floating-shapes"), speed: 0.3 },
+      { el: document.querySelector("#particles-canvas"), speed: 0.2 },
+    ];
   });
 
-  requestAnimationFrame(parallaxScroll);
+  const updateParallax = () => {
+    const scrolled = window.pageYOffset;
+    parallaxElements.forEach((item) => {
+      if (item.el) {
+        const yPos = -(scrolled * item.speed);
+        item.el.style.transform = `translate3d(0, ${yPos}px, 0)`;
+      }
+    });
+    ticking = false;
+  };
+
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateParallax);
+        ticking = true;
+      }
+    },
+    { passive: true },
+  );
 }
 
-if (window.innerWidth > 768) {
-  parallaxScroll();
-}
-
-// ORIGINAL CODE (OPTIMIZED)
+// LOADER
 window.addEventListener("load", () => {
   setTimeout(() => {
     document.getElementById("loader").classList.add("hidden");
@@ -249,28 +298,30 @@ window.addEventListener("load", () => {
   }, 1500);
 });
 
-// Custom Cursor
-const cursor = document.querySelector(".cursor");
-const follower = document.querySelector(".cursor-follower");
+// CUSTOM CURSOR (sadece desktop ve dokunmatik değilse)
+if (!isMobile && !isTouch) {
+  const cursor = document.querySelector(".cursor");
+  const follower = document.querySelector(".cursor-follower");
 
-let mouseX = 0,
-  mouseY = 0;
-let followerX = 0,
-  followerY = 0;
+  let mouseX = 0,
+    mouseY = 0;
+  let followerX = 0,
+    followerY = 0;
 
-if (window.innerWidth > 768) {
-  document.addEventListener("mousemove", (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-    cursor.style.left = mouseX + "px";
-    cursor.style.top = mouseY + "px";
-  });
+  document.addEventListener(
+    "mousemove",
+    (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      cursor.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
+    },
+    { passive: true },
+  );
 
   function animateFollower() {
     followerX += (mouseX - followerX) * 0.1;
     followerY += (mouseY - followerY) * 0.1;
-    follower.style.left = followerX + "px";
-    follower.style.top = followerY + "px";
+    follower.style.transform = `translate3d(${followerX}px, ${followerY}px, 0)`;
     requestAnimationFrame(animateFollower);
   }
   animateFollower();
@@ -282,87 +333,112 @@ if (window.innerWidth > 768) {
     el.addEventListener("mouseenter", () => cursor.classList.add("active"));
     el.addEventListener("mouseleave", () => cursor.classList.remove("active"));
   });
+} else {
+  // Mobilde cursor elementlerini gizle
+  document.querySelector(".cursor")?.remove();
+  document.querySelector(".cursor-follower")?.remove();
 }
 
-// Particles
+// PARTICLES (optimize edilmiş, mobilde daha az parçacık)
 const canvas = document.getElementById("particles-canvas");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+if (canvas && !isMobile) {
+  const ctx = canvas.getContext("2d", { alpha: true });
 
-const particles = [];
-const particleCount = window.innerWidth > 768 ? 80 : 40;
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener("resize", debounce(resizeCanvas, 250));
 
-class Particle {
-  constructor() {
-    this.x = Math.random() * canvas.width;
-    this.y = Math.random() * canvas.height;
-    this.vx = (Math.random() - 0.5) * 0.5;
-    this.vy = (Math.random() - 0.5) * 0.5;
-    this.radius = Math.random() * 2;
+  const particleCount = isMobile ? 20 : 60;
+  const particles = [];
+
+  class Particle {
+    constructor() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * canvas.height;
+      this.vx = (Math.random() - 0.5) * 0.5;
+      this.vy = (Math.random() - 0.5) * 0.5;
+      this.radius = Math.random() * 2;
+    }
+
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+      if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(212, 175, 55, 0.5)";
+      ctx.fill();
+    }
   }
 
-  update() {
-    this.x += this.vx;
-    this.y += this.vy;
-    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+  for (let i = 0; i < particleCount; i++) {
+    particles.push(new Particle());
   }
 
-  draw() {
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(212, 175, 55, 0.5)";
-    ctx.fill();
+  let animationId;
+  function animateParticles() {
+    animationId = requestAnimationFrame(animateParticles);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach((particle) => {
+      particle.update();
+      particle.draw();
+    });
   }
-}
+  animateParticles();
 
-for (let i = 0; i < particleCount; i++) {
-  particles.push(new Particle());
-}
-
-function animateParticles(currentTime) {
-  requestAnimationFrame(animateParticles);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  particles.forEach((particle) => {
-    particle.update();
-    particle.draw();
+  // Sayfa görünür değilken animasyonu durdur
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      cancelAnimationFrame(animationId);
+    } else {
+      animateParticles();
+    }
   });
+} else if (canvas && isMobile) {
+  canvas.remove(); // Mobilde canvas'ı tamamen kaldır
 }
-animateParticles(0);
 
-// Scroll Progress
-window.addEventListener("scroll", () => {
+// SCROLL PROGRESS (optimize edilmiş)
+const updateScrollProgress = throttle(() => {
   const scrollTop = window.pageYOffset;
   const docHeight = document.documentElement.scrollHeight - window.innerHeight;
   const scrollPercent = (scrollTop / docHeight) * 100;
   document.getElementById("scrollProgress").style.width = scrollPercent + "%";
-});
+}, 50);
 
-// Form Submission
+window.addEventListener("scroll", updateScrollProgress, { passive: true });
+
+// FORM SUBMISSION
 document.getElementById("contactForm").addEventListener("submit", (e) => {
-  // e.preventDefault(); <-- Bu satırın önüne // ekledik, artık mail gidecek.
   alert("Mesajın gönderiliyor! En kısa sürede dönüş yapacağım 🚀");
 });
 
-// Scroll Reveal
+// SCROLL REVEAL (optimize edilmiş)
 const observer = new IntersectionObserver(
   (entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         entry.target.classList.add("revealed");
+        observer.unobserve(entry.target); // Bir kez göründükten sonra gözlemlemeyi durdur
       }
     });
   },
-  { threshold: 0.15 },
+  { threshold: 0.1, rootMargin: "50px" },
 );
 
 document
   .querySelectorAll(".reveal-element")
   .forEach((el) => observer.observe(el));
 
-// 3D Tilt Effect
-if (window.innerWidth > 768) {
+// 3D TILT EFFECT (sadece desktop ve dokunmatik değilse)
+if (!isMobile && !isTouch) {
   document.querySelectorAll("[data-tilt]").forEach((card) => {
     card.addEventListener("mousemove", (e) => {
       const rect = card.getBoundingClientRect();
@@ -374,8 +450,20 @@ if (window.innerWidth > 768) {
       const rotateY = (centerX - x) / 20;
       card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-15px) scale(1.02)`;
     });
+
     card.addEventListener("mouseleave", () => {
       card.style.transform = "";
     });
   });
 }
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+  anchor.addEventListener("click", function (e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute("href"));
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
+});

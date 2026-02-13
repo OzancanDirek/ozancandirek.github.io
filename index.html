@@ -13,14 +13,25 @@
 
     <div class="scroll-progress" id="scrollProgress"></div>
 
+    <!-- Cursor sadece desktop için yüklenecek -->
     <div class="cursor"></div>
     <div class="cursor-follower"></div>
 
+    <!-- Canvas sadece desktop için -->
     <canvas id="particles-canvas"></canvas>
 
     <nav>
       <div class="logo">OZANCAN DIREK</div>
-      <ul class="nav-links">
+      <button
+        class="mobile-menu-toggle"
+        id="mobileMenuToggle"
+        aria-label="Menu"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="nav-links" id="navLinks">
         <li><a href="#hero">Home Page</a></li>
         <li><a href="#about">About Me</a></li>
         <li><a href="#hobbies">Hobbies</a></li>
@@ -35,12 +46,8 @@
 
     <section id="hero">
       <div class="grid-background"></div>
+      <!-- Floating shapes sayısı azaltıldı -->
       <div class="floating-shapes">
-        <div class="shape"></div>
-        <div class="shape"></div>
-        <div class="shape"></div>
-        <div class="shape"></div>
-        <div class="shape"></div>
         <div class="shape"></div>
         <div class="shape"></div>
         <div class="shape"></div>
@@ -166,7 +173,7 @@
           <br />
         </div>
         <div class="hobbies-grid">
-          <div class="hobby-card reveal-element" data-tilt>
+          <div class="hobby-card reveal-element">
             <div class="hobby-icon">💻 Coding</div>
             <p>
               Learning new technologies, contributing to open source projects,
@@ -175,15 +182,15 @@
             </p>
             <div class="card-shine"></div>
           </div>
-          <div class="hobby-card reveal-element" data-tilt>
-            <div class="hobby-icon">🔪 Cooking</div>
+          <div class="hobby-card reveal-element">
+            <div class="hobby-icon">🔪Cooking</div>
             <p>
               Researching and making dishes from different cultures has been a
               long-standing hobby of mine.
             </p>
             <div class="card-shine"></div>
           </div>
-          <div class="hobby-card reveal-element" data-tilt>
+          <div class="hobby-card reveal-element">
             <div class="hobby-icon">🎵 Music</div>
             <p>
               I enjoy listening to lo-fi music while coding and electronic music
@@ -192,8 +199,8 @@
             </p>
             <div class="card-shine"></div>
           </div>
-          <div class="hobby-card reveal-element" data-tilt>
-            <div class="hobby-icon">📍 Discover</div>
+          <div class="hobby-card reveal-element">
+            <div class="hobby-icon">📍Discover</div>
             <h3></h3>
             <p>
               Discovering new places and learning are a way of life for me.
@@ -201,7 +208,7 @@
             </p>
             <div class="card-shine"></div>
           </div>
-          <div class="hobby-card reveal-element" data-tilt>
+          <div class="hobby-card reveal-element">
             <div class="hobby-icon">🎬 Movies</div>
             <p>
               Science fiction, detective, and psychological films are my
@@ -209,8 +216,8 @@
             </p>
             <div class="card-shine"></div>
           </div>
-          <div class="hobby-card reveal-element" data-tilt>
-            <div class="hobby-icon">📸 Photography</div>
+          <div class="hobby-card reveal-element">
+            <div class="hobby-icon">📸Photos</div>
             <p>
               Street photography and capturing moments are always good aids to
               observation.
@@ -265,8 +272,8 @@
               <div class="interest-icon">✨</div>
               <h3>User Experience</h3>
               <p>
-                I'm looking for the answer to the question, “Why should I press
-                this button?” My main focus is designing pages that people will
+                I'm looking for the answer to the question, "Why should I press
+                this button?" My main focus is designing pages that people will
                 enjoy using without difficulty.
               </p>
               <div class="card-glow"></div>
