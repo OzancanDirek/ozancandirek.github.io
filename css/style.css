@@ -766,69 +766,170 @@ section {
   cursor: pointer;
 }
 
+/* Staggered reveal animation */
+.hobby-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.hobby-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.hobby-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.hobby-card:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.hobby-card:nth-child(5) {
+  animation-delay: 0.5s;
+}
+.hobby-card:nth-child(6) {
+  animation-delay: 0.6s;
+}
+
 .hobby-icon {
   font-size: 3rem;
   margin-bottom: 20px;
   display: block;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.card-shine {
+/* Animated gradient border effect */
+.hobby-card::before {
+  content: "";
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
+  inset: -2px;
+  border-radius: 20px;
+  padding: 2px;
   background: linear-gradient(
     45deg,
-    transparent,
-    rgba(212, 175, 55, 0.1),
-    transparent
+    var(--gold),
+    var(--gold-light),
+    var(--gold),
+    var(--gold-dark),
+    var(--gold)
   );
-  transform: rotate(45deg);
-  transition: all 0.6s ease;
+  background-size: 300% 300%;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
   opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
 }
 
-.hobby-card:hover .card-shine {
+.hobby-card:hover::before {
   opacity: 1;
-  animation: shine 1.5s ease-in-out;
+  animation: border-glow 3s ease infinite;
 }
 
-@keyframes shine {
-  0% {
-    transform: translateX(-100%) rotate(45deg);
-  }
+@keyframes border-glow {
+  0%,
   100% {
-    transform: translateX(100%) rotate(45deg);
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
   }
 }
 
-.hobby-card::before {
+/* Particle effect background */
+.hobby-card::after {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+  background: radial-gradient(
+    circle at 50% 50%,
+    transparent 0%,
+    rgba(212, 175, 55, 0.03) 100%
+  );
   opacity: 0;
   transition: opacity 0.4s ease;
   z-index: 0;
+  pointer-events: none;
 }
 
-.hobby-card:hover::before {
-  opacity: 0.05;
+.hobby-card:hover::after {
+  opacity: 1;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+/* Shine sweep effect */
+.card-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(212, 175, 55, 0.15),
+    rgba(212, 175, 55, 0.3),
+    rgba(212, 175, 55, 0.15),
+    transparent
+  );
+  transition: left 0.6s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hobby-card:hover .card-shine {
+  left: 100%;
+}
+
+/* Floating animation for icon */
+.hobby-card:hover .hobby-icon {
+  transform: translateY(-10px) rotate(5deg) scale(1.1);
+  filter: drop-shadow(0 10px 20px rgba(212, 175, 55, 0.4));
 }
 
 .hobby-card:hover {
-  transform: translateY(-10px) scale(1.02);
+  transform: translateY(-15px);
   border-color: var(--gold);
-  box-shadow: 0 25px 50px rgba(212, 175, 55, 0.25);
+  box-shadow:
+    0 25px 50px rgba(212, 175, 55, 0.25),
+    0 0 0 1px rgba(212, 175, 55, 0.1) inset;
+  background: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0.08) 0%,
+    rgba(212, 175, 55, 0.02) 100%
+  );
 }
 
+.hobby-card h3,
 .hobby-card p {
   position: relative;
   z-index: 1;
+  transition: transform 0.4s ease;
+}
+
+.hobby-card:hover h3 {
+  color: var(--gold);
+  transform: translateX(5px);
+}
+
+.hobby-card:hover p {
+  transform: translateX(3px);
 }
 
 /* Interest Cards */
@@ -1455,6 +1556,13 @@ body.light-theme .social-item {
   }
 
   /* Disable hover effects on mobile */
+  .hobby-card:hover::before,
+  .hobby-card:hover::after,
+  .hobby-card:hover .card-shine {
+    animation: none;
+    opacity: 0;
+  }
+
   .hobby-card:hover,
   .interest-card-modern:hover,
   .project-card:hover,
@@ -1464,11 +1572,27 @@ body.light-theme .social-item {
     box-shadow: none;
   }
 
+  .hobby-card:hover .hobby-icon,
+  .hobby-card:hover h3,
+  .hobby-card:hover p {
+    transform: none;
+    filter: none;
+  }
+
   /* Active state instead of hover for mobile */
   .hobby-card:active,
   .interest-card-modern:active,
   .project-card:active {
     transform: scale(0.98);
+  }
+
+  .hobby-card:active {
+    background: linear-gradient(
+      135deg,
+      rgba(212, 175, 55, 0.08) 0%,
+      rgba(212, 175, 55, 0.02) 100%
+    );
+    border-color: var(--gold);
   }
 }
 
